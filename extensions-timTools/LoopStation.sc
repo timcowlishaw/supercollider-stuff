@@ -1,8 +1,8 @@
 LoopStation {
-	var server, proxySpace, environment, fftSize, hop, win, recFadeTime, channelNames;
+	var server, proxySpace, environment, fftSize, hop, win, recFadeTime, grainBufLength, channelNames;
 
-	*new { |server, proxySpace, environment, fftSize=8192, hop=0.5, win=1, recFadeTime=0.5|
-		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win, recFadeTime, List.new());
+	*new { |server, proxySpace, environment, fftSize=8192, hop=0.5, win=1, recFadeTime=0.5, grainBufLength=30|
+		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win, recFadeTime, grainBufLength, List.new());
 	}
 
 	key { |ns, param|
@@ -33,9 +33,12 @@ LoopStation {
 		var spec_mix = this.key(name, \spec_mix);
 		var grain_mix = this.key(name, \grain_mix);
 		var grain_density = this.key(name, \grain_density);
-		var grain_attack = this.key(name, \grain_attack);
-		var grain_release = this.key(name, \grain_release);
-		var grain_curve = this.key(name, \grain_curve);
+		var grain_trigs = this.key(name, \grain_trigs);
+		var grain_pos_randomness = this.key(name, \grain_pos_randomness);
+		var grain_duration = this.key(name, \grain_duration);
+		var grain_rate = this.key(name, \grain_rate);
+		var grain_buffer = this.key(name, \grain_buffer);
+		var grain_recorder = this.key(name, \grain_buffer);
 
 		channelNames.add(name);
 
@@ -44,11 +47,13 @@ LoopStation {
 		proxySpace[spec_mix] = { -1.0 };
 		proxySpace[grain_mix] = { -1.0 };
 		proxySpace[grain_density] = { 0 };
-		proxySpace[grain_attack] = { 0.01 };
-		proxySpace[grain_release] = { 0.25 };
-		proxySpace[grain_curve] = { 0 };
+		proxySpace[grain_duration] = { 0.1 };
+		proxySpace[grain_pos_randomness] = { -1 };
+		proxySpace[grain_rate] = { 1.0 };
+
 
 		environment[buffer] = Buffer.read(server, filename);
+		environment[grain_buffer] = Buffer.alloc(server, grainBufLength * server.sampleRate, 1);
 
 		proxySpace[clean_playback] = {
 			var playHead;
@@ -93,18 +98,29 @@ LoopStation {
 				XFade2.ar(proxySpace[clean_playback], proxySpace[spec_playback], proxySpace[spec_mix], 1.0);
 			};
 
+			proxySpace[grain_recorder] = {
+				var inputSig, recHead, bufnum;
+				bufnum = environment[grain_buffer].bufnum;
+				recHead = Phasor.ar(0, BufRateScale.kr(bufnum), 0, BufFrames.kr(bufnum));
+				inputSig = proxySpace[smooth_signal].ar;
+				BufWr.ar(inputSig, bufnum, recHead);
+			};
+
+			proxySpace[grain_trigs] = {
+				Dust.ar(proxySpace[grain_density])
+			};
+
 			proxySpace[grain_playback] = {
-				var impulses, windows, playHead, outSig;
-				impulses = Dust.kr(proxySpace[grain_density]);
-				windows = EnvGen.ar(Env.perc(proxySpace[grain_attack], proxySpace[grain_release], curve: proxySpace[grain_curve]), impulses);
-				playHead = Phasor.ar(
-					impulses,
-					BufRateScale.kr(environment[buffer]),
-					0, BufFrames.kr(environment[buffer]),
-					WhiteNoise.kr(BufFrames.kr(environment[buffer]))
+				var impulses, bufnum;
+				impulses = proxySpace[grain_trigs];
+				bufnum = environment[grain_buffer].bufnum;
+				GrainBuf.ar(1,impulses, proxySpace[grain_duration], environment[grain_buffer], proxySpace[grain_rate],
+					XFade2.ar(
+						Phasor.ar(0, BufRateScale.kr(bufnum) / BufFrames.kr(bufnum), 0, 1),
+						LinLin.ar(WhiteNoise.ar, -1, 1, 0, 1),
+						proxySpace[grain_pos_randomness]
+					)
 				);
-				outSig = BufRd.ar(1, environment[buffer], playHead);
-				outSig * windows;
 			};
 
 			proxySpace[name] = {
@@ -130,9 +146,13 @@ LoopStation {
 		var spec_mix = this.key(name, \spec_mix);
 		var grain_mix = this.key(name, \grain_mix);
 		var grain_density = this.key(name, \grain_density);
-		var grain_attack = this.key(name, \grain_attack);
-		var grain_release = this.key(name, \grain_release);
-		var grain_curve = this.key(name, \grain_curve);
+		var grain_trigs = this.key(name, \grain_trigs);
+		var grain_pos_randomness = this.key(name, \grain_pos_randomness);
+		var grain_duration = this.key(name, \grain_duration);
+		var grain_rate = this.key(name, \grain_rate);
+		var grain_buffer = this.key(name, \grain_buffer);
+		var grain_recorder = this.key(name, \grain_buffer);
+
 
 		channelNames.add(name);
 
@@ -145,9 +165,9 @@ LoopStation {
 		proxySpace[spec_mix] = { -1.0 };
 		proxySpace[grain_mix] = { -1.0 };
 		proxySpace[grain_density] = { 0 };
-		proxySpace[grain_attack] = { 0.01 };
-		proxySpace[grain_release] = { 0.25 };
-		proxySpace[grain_curve] = { 0.5 };
+		proxySpace[grain_duration] = { 0.1 };
+		proxySpace[grain_pos_randomness] = { -1 };
+		proxySpace[grain_rate] = { 1.0 };
 
 		environment[buffer] = Buffer.alloc(server, duration * server.sampleRate, 1);
 		environment[fftBuf] = Buffer.alloc(
@@ -155,6 +175,8 @@ LoopStation {
 			duration.calcPVRecSize(fftSize, hop, server.sampleRate),
 			1
 		);
+		environment[grain_buffer] = Buffer.alloc(server, grainBufLength * server.sampleRate, 1);
+
 
 		proxySpace[recorder] = {
 			var inputSig, existingSig, recHead;
@@ -205,18 +227,29 @@ LoopStation {
 				XFade2.ar(proxySpace[recorder], proxySpace[spec_playback], proxySpace[spec_mix], 1.0);
 			};
 
+			proxySpace[grain_recorder] = {
+				var inputSig, recHead, bufnum;
+				bufnum = environment[grain_buffer].bufnum;
+				recHead = Phasor.ar(0, BufRateScale.kr(bufnum), 0, BufFrames.kr(bufnum));
+				inputSig = proxySpace[smooth_signal].ar;
+				BufWr.ar(inputSig, bufnum, recHead);
+			};
+
+			proxySpace[grain_trigs] = {
+				Dust.ar(proxySpace[grain_density])
+			};
+
 			proxySpace[grain_playback] = {
-				var impulses, windows, playHead, outSig;
-				impulses = Dust.kr(proxySpace[grain_density]);
-				windows = EnvGen.ar(Env.perc(proxySpace[grain_attack], proxySpace[grain_release], curve: proxySpace[grain_curve]), impulses);
-				playHead = Phasor.ar(
-					impulses,
-					BufRateScale.kr(environment[buffer]),
-					0, BufFrames.kr(environment[buffer]),
-					WhiteNoise.kr(BufFrames.kr(environment[buffer]))
+				var impulses, bufnum;
+				impulses = proxySpace[grain_trigs];
+				bufnum = environment[grain_buffer].bufnum;
+				GrainBuf.ar(1,impulses, proxySpace[grain_duration], environment[grain_buffer], proxySpace[grain_rate],
+					XFade2.ar(
+						Phasor.ar(0, BufRateScale.kr(bufnum) / BufFrames.kr(bufnum), 0, 1),
+						LinLin.ar(WhiteNoise.ar, -1, 1, 0, 1),
+						proxySpace[grain_pos_randomness]
+					)
 				);
-				outSig = BufRd.ar(1, environment[buffer], playHead);
-				outSig * windows;
 			};
 
 			proxySpace[name] = {

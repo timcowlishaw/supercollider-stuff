@@ -229,9 +229,34 @@ anything goes weird is if you have done this.
 ~input_level = 0.5
 ~input_fb = 0.0
 
+m.add(l.load(\test_file, "/Users/tim/Music/Samples/loops/sad_piano.WAV"), fb: 0.0)
 m.add(l.load(\test_file, "/Users/tim/Music/Samples/field recording clips/guitar octaves.wav"), fb: 0.0)
 
+m.add(l.listen(\test_file, 20))
+
+~test_file_spec_mix = { 0 }
+~test_file_rate = 0.1
+~test_file_grain_mix = { 1 };
+~test_file_recording = 0
+~test_file_recording_level = 3.0
+~test_file_rec_mix = 0.75
+~test_file_grain_density = { 20.0 };
+~test_file_grain_duration = { 0.1 };
+~test_file_grain_pos_randomness = { -1 }
+~test_file_grain_trigs.scope
+
+(~test_file_grain_rate = {
+	TChoose.kr(
+		CoinGate.kr(1 / ~test_file_grain_density.log10, Trig1.kr(~test_file_grain_trigs, 0.01)),
+		[0.5] ++ Scale.mixolydian.ratios ++ [2.0]
+    ).poll
+})
+
 ~test_file_fb = 2.0
+
+~test_file_angle = 0.5*pi
+
+~test_file_azim = {  LFSaw.kr(0.25, mul:2*pi, add:-pi) }
 
 m.output.scope
 
@@ -493,3 +518,5 @@ p = ProxySpace().push(s.boot); // store proxy space in p so it can be accessed e
 
 ~out = { [~left, ~right] }
 ~out.play
+
+Scale.mixolydian.ratios.pick

@@ -59,9 +59,6 @@ FOAMixer {
 		var transformedKey = this.key(name, \transformed);
 		var feedbackSendKey = this.key(name, \feedback_send);
 
-		fbKey.postln;
-		feedbackSendKey.postln;
-
 		channelNames.add(name);
 
 		if(level != nil)  {
@@ -130,7 +127,6 @@ FOAMixer {
 		proxySpace[\foa_mixer_feedback_send] = {
 			Mix.ar(
 				channelNames.collect { |chan, index|
-					(chan++"_"++\feedback_send).asSymbol.postln;
 					proxySpace[(chan++"_"++\fb_normalised).asSymbol] = {
 						proxySpace[(chan++"_"++\feedback_send).asSymbol] // * (1.0/channelCount)
 					};
