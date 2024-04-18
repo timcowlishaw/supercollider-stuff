@@ -58,6 +58,15 @@ or via the menu File > Open startup file
 		\numInputBusChannels, 2,
 		\channelsPerOrbit, 2,
 		\channelMap, 0 ! 12
+	]),
+	\viu8channel, Dictionary.newFrom([
+		\outDevice, "Eight Channel Bus",
+		\inDevice, "Scarlett 2i4 USB",
+		\inChannel, 0,
+		\numOutputBusChannels, 8,
+		\numInputBusChannels, 2,
+		\channelsPerOrbit, 2,
+		\channelMap, 0 ! 12
 	])
 ]);
 
