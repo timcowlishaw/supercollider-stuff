@@ -1,12 +1,22 @@
 LoopStation {
-	var server, proxySpace, environment, fftSize, hop, win;
+	var server, proxySpace, environment, fftSize, hop, win, channelNames;
 
 	*new { |server, proxySpace, environment, fftSize=8192, hop=0.5, win=1|
-		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win);
+		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win, List.new());
 	}
 
 	key { |ns, param|
 		^(ns++"_"++param).asSymbol
+	}
+
+	printRecording {
+		^channelNames.inject("\n") { |str, chan| str++proxySpace[this.key(chan, \recording)].asCode++"\n" }
+	}
+
+	stopAllRecording {
+		channelNames.each { |chan|
+			proxySpace[this.key(chan, \recording)] = 0;
+		}
 	}
 
 	load { |name, filename|
@@ -26,6 +36,8 @@ LoopStation {
 		var grain_attack = this.key(name, \grain_attack);
 		var grain_release = this.key(name, \grain_release);
 		var grain_curve = this.key(name, \grain_curve);
+
+		channelNames.add(name);
 
 		proxySpace[rate] = { 1.0 };
 		proxySpace[pitch] = { 1.0 };
@@ -122,6 +134,8 @@ LoopStation {
 		var grain_release = this.key(name, \grain_release);
 		var grain_curve = this.key(name, \grain_curve);
 
+		channelNames.add(name);
+
 		proxySpace[recMix]  = { 0.5 };
 		proxySpace[recording] = { startRecording };
 		proxySpace[rate] = { 1.0 };
@@ -131,7 +145,7 @@ LoopStation {
 		proxySpace[grain_density] = { 0 };
 		proxySpace[grain_attack] = { 0.01 };
 		proxySpace[grain_release] = { 0.25 };
-		proxySpace[grain_curve] = { 0 };
+		proxySpace[grain_curve] = { 0.5 };
 
 		environment[buffer] = Buffer.alloc(server, duration * server.sampleRate, 1);
 		environment[fftBuf] = Buffer.alloc(
