@@ -1,8 +1,8 @@
 LoopStation {
-	var server, proxySpace, environment, fftSize, hop, win, channelNames;
+	var server, proxySpace, environment, fftSize, hop, win, recFadeTime, channelNames;
 
-	*new { |server, proxySpace, environment, fftSize=8192, hop=0.5, win=1|
-		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win, List.new());
+	*new { |server, proxySpace, environment, fftSize=8192, hop=0.5, win=1, recFadeTime=0.5|
+		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win, recFadeTime, List.new());
 	}
 
 	key { |ns, param|
@@ -137,7 +137,9 @@ LoopStation {
 		channelNames.add(name);
 
 		proxySpace[recMix]  = { 0.5 };
-		proxySpace[recording] = { startRecording };
+		proxySpace[recording].ar(1);
+		proxySpace[recording] = 0; // Set this again after starting for a soft fade. Caution - you need it to be audio rate
+		proxySpace[recording].fadeTime_(recFadeTime);
 		proxySpace[rate] = { 1.0 };
 		proxySpace[pitch] = { 1.0 };
 		proxySpace[spec_mix] = { -1.0 };
@@ -161,11 +163,13 @@ LoopStation {
 			existingSig = BufRd.ar(1, bufnum, recHead);
 			inputSig = SoundIn.ar(0);
 			BufWr.ar(
-				Select.ar(proxySpace[recording], [
+				XFade2.ar(
 					existingSig,
-					XFade2.ar(inputSig, existingSig, proxySpace[recMix], 1.0)
-				])
-				, bufnum, recHead);
+					XFade2.ar(inputSig, existingSig, proxySpace[recMix], 1.0),
+					LinLin.ar(proxySpace[recording], 0, 1, -1, 1),
+					1.0
+				)
+			, bufnum, recHead);
 			existingSig;
 		};
 
@@ -187,6 +191,9 @@ LoopStation {
 		proxySpace[name] = { Silent.ar(1) };
 		fork {
 			1.wait;
+			//Now smoothly but quickly fade in
+			proxySpace[recording] = startRecording;
+
 			proxySpace[spec_playback] = {
 				var sig, chain, localbuf, shiftSig;
 				localbuf = LocalBuf.new(fftSize);

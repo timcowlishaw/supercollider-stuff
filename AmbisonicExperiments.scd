@@ -205,7 +205,7 @@ m.output.play
 
 p = ProxySpace().push(s.boot); // store proxy space in p so it can be accessed easily.
 q = ();
-l = LoopStation.new(s, p, q, fftSize:16384, hop: 0.25, win: 1);
+l = LoopStation.new(s, p, q, fftSize:16384, hop: 0.25, win: 1, recFadeTime:0.1);
 d = FoaDecoderKernel.newCIPIC(12)
 // This will warn about a flattened array, but da igual, funciona.
 m = FOAMixer.new(s, p, q, maxLevel:5.0)
@@ -235,7 +235,25 @@ m.add(l.load(\test_file, "/Users/tim/Music/Samples/field recording clips/guitar 
 
 m.output.scope
 
-m.add(l.listen(\test_rec, 10))
+m.add(l.listen(\test_rec_2, 10))
+
+~test_rec_2_level = 3.0
+
+
+~test_rec_2_rate = -0.1
+~test_rec__2_spec_mix.fadeTime_(5)
+~test_rec_2_spec_mix = 0
+
+p
+
+~test_rec_2_recording = 0
+
+~test.ar(1)
+~test = 2
+
+~test.rate
+
+~test_file_recording.fadeTim
 
 m.feedbackSend.play
 
@@ -252,6 +270,12 @@ m.printLevels
 ~test_rec_grain_mix = 1
 
 ~test_rec_grain_density = 1.0
+
+~foo = { 2 }
+
+~bar = { 0.5 }
+
+~bar.rate
 
 ~test_rec_attack = 2.0
 
