@@ -1,3 +1,7 @@
+// Found via: https://scsynth.org/t/benjolin-inspired-instrument/1074
+// Specifically from either https://gist.github.com/madskjeldgaard/67d286651b574565dedb8bd50b4c25f6
+// or https://github.com/geoffroymontel/supercollider-experiments/blob/master/benjolin.scd
+// I don't remember :-D
 /*
 Instrument inspired from Rob Hordijk's Benjolin, it requires sc3-plugins (PulseDPW, SVF and DFM1)
 outSignal:
@@ -90,5 +94,6 @@ Spec.add(\outSignal, ControlSpec( 0.0, 6.0, \lin, 1, 6) );
 );
 
 Ndef(\benjolis).clear;
+Ndef(\benjolis).gui;
 
 ~freq1 = { SinOsc.kr(0.2, add:220, mul:1000.0) }

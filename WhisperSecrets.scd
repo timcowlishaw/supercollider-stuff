@@ -1,3 +1,8 @@
+// "cannot believe that we taught rocks to whisper Secret Numbers so vast that
+//  their names have never before and will never be spoken again in the long
+//  span of human time, and we use them to key databases for e-commerce systems"
+//  – https://assemblag.es/@est@emily.news/110874771621260688
+
 // ATK Setup
 // Quarks.install("https://github.com/ambisonictoolkit/atk-sc3.git");
 //Atk.downloadKernels;

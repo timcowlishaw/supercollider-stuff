@@ -170,6 +170,7 @@ m.add(l.listen(\test2, 10))
 
 ~test_record = 0
 
+~foa_mixer_master_fader = 0.2
 
 ~test2_record = 1
 
@@ -206,46 +207,135 @@ p = ProxySpace().push(s.boot); // store proxy space in p so it can be accessed e
 q = ();
 l = LoopStation.new(s, p, q, fftSize:16384, hop: 0.25, win: 1);
 d = FoaDecoderKernel.newCIPIC(12)
-m = FOAMixer.new(s, p, q, d)
-m.output.play
+// This will warn about a flattened array, but da igual, funciona.
+m = FOAMixer.new(s, p, q, maxLevel:5.0)
 
-m.add(l.load(\test_file, "/Users/tim/Dropbox/Music/Samples/loops/sad_piano.WAV"))
+~input = { SoundIn.ar }
 
-~test_file_rate = { SinOsc.kr(0.25, add:-1.0, mul: 4.0) }
+m.add(~input, level: 0.5, fb: 1.0)
+/*
+When using ATK classes within JITLib, it seems to be absolutely crucial to always explicitly refer to
+the audio-rate (.ar) or control-rate (.kr) variant of whatever nodes you're using as input source. Failing to
+do this either mucks up the soundfield in hard to pin down ways (often, but not always, accompanied by a 'output
+reshaped' warning in the console from JITLib, or extremely cryptic (to me) errors. First thing to check if
+anything goes weird is if you have done this.
+*/
+~mixer_decoded = { FoaDecode.ar(m.bus.ar, d) };
+
+~mixer_decoded.play
+
+~test_file_level = 0.7
+
+~input_level = 0.5
+~input_fb = 0.0
+
+m.add(l.load(\test_file, "/Users/tim/Music/Samples/field recording clips/guitar octaves.wav"), fb: 0.0)
+
+~test_file_fb = 2.0
+
+m.output.scope
+
+m.add(l.listen(\test_rec, 10))
+
+m.feedbackSend.play
+
+m.printLevels
+
+~test_rec_level = 4.0
+
+~test_rec_level = 4.0
+
+~test_rec_rate = -0.1
+
+~test_rec_spec_mix = 1
+
+~test_rec_grain_mix = 1
+
+~test_rec_grain_density = 1.0
+
+~test_rec_attack = 2.0
+
+~test_rec_release = 2.0
+
+~test_file_level = 0
+
+~test_file_rate = { SinOsc.kr(0.25, add:-1.0, mul: 2.0) }
 
 ~test_file_spec_mix = 1
 
-~test_file_rate = 0.25
+~test_file_level = 2.0
 
-~test_file_grain_mix = 0.75
+~foa_mixer_master_fader = 1.0
 
-~test_file_grain_density = { 2 + SinOsc.kr(0.25, mul: 5.0) }
+~test_file_grain_mix = 0
 
-~test_file_grain_release = 0.2
+~test_file_grain_density = 3 /// { 2 + SinOsc.kr(0.25, mul: 5.0) }
 
-~test_file_grain_attack = 0.01
+~test_file_grain_release = 3
 
-~test_file_level = 0.0
+~test_file_grain_attack = 2
+
+~test_file_level = 1.0
+
+~test_file_level.fadeTime_(5)
 
 ~test_file_insert = { CombL.ar(~test_file, 2.0, 0.9, 10.0) }
 
+~test_file_pitch = { Prand(Scale.dorian().ratios).asStream.next }
+~test_file_pitch.fadeTime_(0.1)
+
+
+(~test_file_insert = {
+	DynKlank.ar(`[[800, 1021, 1723, 2309], nil, [1.2, 1.5, 3, 2]], ~test_file)
+})
+
+
+(~test_file2_insert = {
+	var shifted, shaped, b;
+	b = Buffer.alloc(s, 512, 1, { |buf| buf.chebyMsg([1,0,1,1,0,1])});
+	shifted = PitchShift.ar(~test_file2.ar,
+		windowSize: SinOsc.kr(0.25, add:0.1, mul: 1.9),
+		pitchRatio: ~test_file_pitch,
+		pitchDispersion: SinOsc.kr(0.1, mul: 0.00),
+		timeDispersion: SinOsc.kr(0.08, mul: 3.0)
+	);
+	shaped = InsideOut.ar(shifted);
+	CombL.ar(~test_file2 + shifted +  HPF.ar(SinOsc.kr(SinOsc.kr(0.01, mul: 3.0, add: 0.5), mul: 0.02)*shaped, 1200), 10.0, 2.0, 9.0);
+})
+
 m.printLevels()
 
-m.add(l.load(\test_file2, "/Users/tim/Dropbox/Music/Samples/loops/sad_piano.WAV"))
-
-~test_file2_rate = 0.1
+m.add(l.load(\test_file2,  "/Users/tim/Music/Samples/field recording clips/guitar octaves.wav"))
 
 ~test_file2_spec_mix = 1
 
-~test_file2_level = 3.0
+~test_file2_rate = -1
 
-~test_file_pitch.fadeTime_(0.5)
+~test_file2_grain_mix = 1
 
-~test_file2_pitch = 2
+~test_file2_grain_attack = 0
+~test_file2_grain_release = { WhiteNoise.kr(1.0, 0.01) }
 
-~test_file2_level = 0.0
 
-~test_file2_insert = { PitchShift.ar(~test_file2.ar, windowSize: 0.1, pitchRatio: ~test_file2_pitch, pitchDispersion: 0, timeDispersion: 0.5) }
+~test_file2_grain_density = { SinOsc.kr(WhiteNoise.kr(1.0, 0.25), mul: SinOsc.kr(freq: 0.04, mul: 300, add: 5), add: 5) }
+
+~test_file2_rate = 0.1
+
+~test_file2_spec_mix = -0.01
+
+~test_file2_level = 0.5
+
+~test_file_pitch.fadeTime_(2)
+
+~test_file2_pitch = { WhiteNoise.kr(3.0, 0.1) }
+
+~test_file2_level.fadeTime_(5)
+
+~test_file2_level = 0.5
+
+~test_file2_insert = {
+	PitchShift.ar(~test_file2.ar, windowSize: 0.1, pitchRatio: ~test_file2_pitch, pitchDispersion: 0, timeDispersion: 0.5) * ~test_file2
+}
 
 
 
@@ -258,11 +348,21 @@ m.add(l.load(\test_file2, "/Users/tim/Dropbox/Music/Samples/loops/sad_piano.WAV"
 
 m.add(l.listen(\test, 20.0))
 
-~test_level = 6.0
+~test_punch = 1
+
+~test_record_mix = 0
+
+~test_level = 2.0
 
 ~test_spec_mix = 0
 
-~test_spec_rate = -0.33
+~test_grain_mix = 0.5
+
+~test_grain_density = 5.0
+~test_grain_attack = 0.2
+~test_grain_release = 0.7
+
+~test_rate = 1.33
 
 ~test_punch = 0
 
@@ -282,9 +382,11 @@ m.add(l.listen(\test, 20.0))
 
 ~test_rate = 0.25
 
-~test_grain_mix = 0
+~test_grain_mix = 0.1
 
 ~test_grain_density = 5.0
+
+
 
 ~test_recording = 0
 
@@ -296,7 +398,11 @@ m.add(l.listen(\test, 20.0))
 
 m.add(l.listen(\test2, 5.0))
 
-~test2_spec_mix = 0.6
+~test2_record_mix = 0
+
+~test2_spec_mix = 1
+
+~test2_punch = 0
 
 ~test2_spec_rate = 0.1
 
@@ -304,15 +410,62 @@ m.add(l.listen(\test2, 5.0))
 
 ~test2_grain_mix = 0.1
 
-~test_grain_density = 5.0
+~test2_grain_density = 5.0
 
 q.test_file_buffer.duration
 
+m.add(l.listen(\test4, 13.24))
+
+~test3_level  = 0
+
+~test3_spec_rate = -0.2
+
+~test3_spec_mix = { SinOsc.kr(0.25, mul:2.0, add:-1.0) }
+
+
+
+
+
+
 l.load(\test_file, "/Users/tim/Dropbox/Music/Samples/loops/sad_piano.WAV").play
 
+~test3_grain_mix = 0
+
+~test3_grain_density = { SinOsc.kr(0.1, mul:20.0) }
+
+~test3_grain_attack = 0.2
+
+~test_3_grain_release = 0.7
 
 q.b_test = Buffer.read(s, "/Users/tim/Dropbox/Music/Samples/loops/sad_piano.WAV");
 
 q.b_test.play
 
 ["a", "b", "c"].inject("\n") {|m,x| m++x++"\n" }
+
+~test1a = { SinOsc.kr(440) }
+~test2 = { 4 }
+
+
+
+~mina = { Clip.ar(~test1a, -0.8, 0.8) }
+{ ~mina * 0.5 }.play
+
+p = ProxySpace().push(s.boot); // store proxy space in p so it can be accessed easily.
+
+~left_freq= { 220 }
+~left_2_freq = { 440 }
+~right_freq = { 1200 }
+
+~left = { [SinOsc.ar(~left_freq) * 0.3, SinOsc.ar(~left_2_freq) * 0.3] }
+~right = { SinOsc.ar(~right_freq) * 0.3 }
+
+~out = { Silent.ar(3) }
+~out.reshaping = \expanding
+
+~out = { ~left }
+
+~out.add(~right, 2)
+
+~out = { [~left, ~right] }
+~out.play
