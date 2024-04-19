@@ -7,6 +7,12 @@
 // Ranges for push:
 //   Angle: -0.5pi (distant, west), 0 (centre), 0.5pi (distant, east)
 //   Azimuth: pi (south), 0.5pi (west), 0 (north), -0.5pi (east), -pi (south, again)
+
+
+/// TODO TIM FIX ALL THIS WITH NEW CONTROLS AND STARTUP / LEVEL SETTING STUFF PROCEDURE
+
+/// THEN TWO LOOPERS PER SECTION PLUS SOME READY MADE EFFECT TEMPLATES
+
 // Looper controls
 /*
 		var recMix = this.key(name, \record_mix);

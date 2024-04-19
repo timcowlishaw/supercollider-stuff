@@ -14,7 +14,7 @@ LoopStation {
 	}
 
 	stopAllRecording {
-		channelNames.each { |chan|
+		channelNames.collect { |chan|
 			proxySpace[this.key(chan, \recording)] = 0;
 		}
 	}
