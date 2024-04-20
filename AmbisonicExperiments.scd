@@ -209,6 +209,9 @@ l = LoopStation.new(s, p, q, fftSize:16384, hop: 0.25, win: 1, recFadeTime:0.1);
 d = FoaDecoderKernel.newCIPIC(12)
 // This will warn about a flattened array, but da igual, funciona.
 m = FOAMixer.new(s, p, q, maxLevel:5.0)
+~foa_mixer_master_fader = 0.8
+
+m.output.play
 
 ~input = { SoundIn.ar }
 
@@ -226,7 +229,7 @@ anything goes weird is if you have done this.
 
 ~test_file_level = 0.7
 
-~input_level = 0.5
+~input_level = 0.0
 ~input_fb = 0.0
 
 m.add(l.load(\test_file, "/Users/tim/Music/Samples/loops/sad_piano.WAV"), fb: 0.0)
@@ -234,29 +237,40 @@ m.add(l.load(\test_file, "/Users/tim/Music/Samples/field recording clips/guitar 
 
 m.add(l.listen(\test_file, 20))
 
-~test_file_spec_mix = { 0 }
-~test_file_rate = 0.1
-~test_file_grain_mix = { 1 };
-~test_file_recording = 0
-~test_file_recording_level = 3.0
-~test_file_rec_mix = 0.75
-~test_file_grain_density = { 20.0 };
-~test_file_grain_duration = { 0.1 };
-~test_file_grain_pos_randomness = { -1 }
-~test_file_grain_trigs.scope
+~test_file_spec_mix = { 1 }
+
+~test_file_spec_mix.fadeTime_(10.0)
+~test_file_rate = 0.65
+~test_file_grain_mix = { 0 };
+//~test_file_recording = 0
+~test_file_level = 0.0
+//~test_file_rec_mix = 0.75
+~test_file_grain_density = { 4.0 };
+~test_file_grain_density.fadeTime_(10.0)
+~test_file_grain_duration = { 2.1 };
+~test_file_grain_duration.fadeTime_(30.0);
+~test_file_grain_pos_randomness = { .kr(0.21) }
+
+
+~ping = { PinkNoise.ar * Dust.kr(10.0) }
+
+~ping.play
+
+m.add(~ping)
+
 
 (~test_file_grain_rate = {
 	TChoose.kr(
 		CoinGate.kr(1 / ~test_file_grain_density.log10, Trig1.kr(~test_file_grain_trigs, 0.01)),
-		[0.5] ++ Scale.mixolydian.ratios ++ [2.0]
-    ).poll
+		[0.5] ++ Scale.aeolian.ratios.at([0, 2, 4, 6]) ++ [2.0]
+    )
 })
 
 ~test_file_fb = 2.0
 
 ~test_file_angle = 0.5*pi
 
-~test_file_azim = {  LFSaw.kr(0.25, mul:2*pi, add:-pi) }
+~test_file_azim = {  -0*pi }
 
 m.output.scope
 

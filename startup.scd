@@ -61,7 +61,7 @@ or via the menu File > Open startup file
 	]),
 	\viu8channel, Dictionary.newFrom([
 		\outDevice, "Eight Channel Bus",
-		\inDevice, "Scarlett 2i4 USB",
+		\inDevice, "Aggregate Device",
 		\inChannel, 0,
 		\numOutputBusChannels, 8,
 		\numInputBusChannels, 2,
