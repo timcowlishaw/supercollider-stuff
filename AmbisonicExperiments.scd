@@ -237,10 +237,11 @@ m.add(l.load(\test_file, "/Users/tim/Music/Samples/field recording clips/guitar 
 
 m.add(l.listen(\test_file, 20))
 
-~test_file_spec_mix = { 1 }
+~test_file_spec_mix = { 0 }
 
 ~test_file_spec_mix.fadeTime_(10.0)
-~test_file_rate = 0.65
+~test_file_rate = 0.15
+
 ~test_file_grain_mix = { 0 };
 //~test_file_recording = 0
 ~test_file_level = 0.0
@@ -249,8 +250,13 @@ m.add(l.listen(\test_file, 20))
 ~test_file_grain_density.fadeTime_(10.0)
 ~test_file_grain_duration = { 2.1 };
 ~test_file_grain_duration.fadeTime_(30.0);
-~test_file_grain_pos_randomness = { .kr(0.21) }
+~test_file_grain_pos_randomness = { SinOsc.kr(0.21) }
 
+
+~test_file_recording = 0
+
+
+l.printRecording
 
 ~ping = { PinkNoise.ar * Dust.kr(10.0) }
 
@@ -262,7 +268,7 @@ m.add(~ping)
 (~test_file_grain_rate = {
 	TChoose.kr(
 		CoinGate.kr(1 / ~test_file_grain_density.log10, Trig1.kr(~test_file_grain_trigs, 0.01)),
-		[0.5] ++ Scale.aeolian.ratios.at([0, 2, 4, 6]) ++ [2.0]
+		[0.5] ++ Scale.aeolian.ratios.at([0, 4]) ++ [2.0]
     )
 })
 
@@ -274,7 +280,44 @@ m.add(~ping)
 
 m.output.scope
 
-m.add(l.listen(\test_rec_2, 10))
+m.add(l.listen(\test_rec_2, 13))
+
+l.printRecording
+
+~test_rec_2_spec_mix = 1;
+
+~test_rec_2_rate.fadeTime_(10)
+
+~test_rec_2_rate = -0.1
+
+~test_rec_2_recording = false
+
+m.add(l.listen(\test_rec, 7))
+
+
+~test_rec_record_mix = 0.95
+~test_rec_recoring = 0
+~test_rec_spec_mix = 1
+~test_rec_spec_mix.fadeTime_(30)
+~test_rec_rate.fadeTime_(20)
+~test_rec_rate = -0.1
+
+
+~test_rec_2_level.fadeTime_(30)
+~test_rec_2_level = 0
+
+~test_file_spec_mix.fadeTime_(10)
+~test_file_spec_mix = -1
+
+~test_rec_level.fadeTime_(20)
+~test_rec_level = 0
+
+
+~test_file_grain_mix.fadeTime_(10)
+
+~test_file_grain_mix = -1
+
+m.output.scope
 
 ~test_rec_2_level = 3.0
 
