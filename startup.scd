@@ -71,8 +71,8 @@ or via the menu File > Open startup file
 ]);
 
 ~interface = ~interfaces.at(\focusrite);
-~loadSuperdirt = false;
-~loadStageMaster = false;
+~loadSuperdirt = true;
+~loadStageMaster = true;
 
 s.reboot { // server options are only updated on reboot
 	// configure the sound server: here you could add hardware specific options
@@ -98,10 +98,10 @@ s.reboot { // server options are only updated on reboot
 		if(~loadSuperdirt, {
 			~dirt.stop; // stop any old ones, avoid duplicate dirt (if it is nil, this won't do anything)
 			~dirt = SuperDirt(~interface.at(\channelsPerOrbit), s); // two output channels, increase if you want to pan across more channels
-			// load("/Users/tim/Library/Application Support/SuperCollider/synthdefs/mi-ugens.scd");
+			load("/home/tim/.local/share/SuperCollider/synthdefs/mi-ugens.scd");
 			~dirt.loadSoundFiles;   // load samples (path containing a wildcard can be passed in)
 			// for example: ~dirt.loadSoundFiles("/Users/myUserName/Dirt/samples/*");
-			~dirt.loadSoundFiles("/Users/tim/Music/Dirt/samples/*"); // specify sample folder to load
+			~dirt.loadSoundFiles("/home/tim/Music/Dirt/samples/*"); // specify sample folder to load
 			s.sync; // optionally: wait for samples to be read
 
 			// When a stereo out is selected:
