@@ -1,0 +1,8 @@
+command! -nargs=0 proxyspace :normal ip = proxyspace().push(s.boot);q = ();
+
+command! -nargs=0 Tuning :normal iq.root = 69.296;q.scale = Scale.dorian.ratios;~octave = { 1 };~detune = { 0.0 };~detune_rate = { 0 };~detune_rate_diff = { 0 };~detune_phase_diff = { 0};~root = { [ q.root * 2.pow(~octave) + SinOsc.ar(~detune_rate - ~detune_rate_diff, mul: ~detune), q.root  * 2.pow(~octave) + SinOsc.ar(~detune_rate + ~detune_rate_diff, phase: ~detune_phase_diff, mul: ~detune) ] };
+
+command! -nargs=1 Osc :normal i~fund<args> = { (~root * 2.pow(0) * q.scale[0]) };~fund<args>.fadeTime_(0.1);~freq<args> = { ~fund<args> };~amp<args> = { 0.05 };~amp<args>.fadeTime_(0.1);~osc<args> = { SinOsc.ar(~freq<args>) };~out<args> = { ~osc<args> * ~amp<args> };
+
+command! -nargs=0 Mix :normal i~mix = { ~out1 };~mix.fadeTime_(10);~level = { 1.0 };~level.fadeTime_(2.0);~master = { ~mix * ~level };~master.play;
+
