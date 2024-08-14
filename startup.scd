@@ -14,18 +14,9 @@ or via the menu File > Open startup file
 
 (
 ~interfaces = Dictionary.newFrom([
-	\bluetooth, Dictionary.newFrom([
-		\outDevice, "Loopback to earbuds",
-		\inDevice, "Built-in Microph",
-		\inChannel, 0,
-		\numOutputBusChannels, 2,
-		\numInputBusChannels, 2,
-		\channelsPerOrbit, 2,
-		\channelMap, 0 ! 12,
-	]),
-	\builtIn, Dictionary.newFrom([
-		\outDevice, "Built-in Output",
-		\inDevice, "Built-in Microph",
+	\stereo, Dictionary.newFrom([
+		\outDevice, "Supercollider (stereo)",
+		\inDevice, "Supercollider (stereo)",
 		\inChannel, 0,
 		\numOutputBusChannels, 2,
 		\numInputBusChannels, 2,
@@ -33,44 +24,26 @@ or via the menu File > Open startup file
 		\channelMap, 0 ! 12,
 	]),
 	\soundcraft, Dictionary.newFrom([
-		\outDevice, "Soundcraft Signature 12 MTK",
-		\inDevice, "Soundcraft Signature 12 MTK",
+		\outDevice, "Supercollider (soundcraft)",
+		\inDevice, "Supercollider (soundcraft)",
 		\inChannel, 4,
 		\numOutputBusChannels, 12,
 		\numInputBusChannels, 14,
 		\channelsPerOrbit, 1,
 		\channelMap, [0, 1, 2, 3, 4, 5, [6,7], [8,9], [10, 11]]
 	]),
-	\mappedEverywhereOut, Dictionary.newFrom([
-		\outDevice, "SuperDirt to Everywhere",
-		\inDevice, "Soundcraft Signature 12 MTK",
-		\inChannel, 4,
-		\numOutputBusChannels, 18,
-		\numInputBusChannels, 14,
-		\channelsPerOrbit, 2,
-		\channelMap, [0, 2, 4, 6, 8, 10, 12, 14, 16]
-	]),
 	\focusrite, Dictionary.newFrom([
-		\outDevice, "Scarlett 2i4 USB",
-		\inDevice, "Scarlett 2i4 USB",
+		\outDevice, "Supercollider (focusrite)",
+		\inDevice, "Supercollider (focusrite)",
 		\inChannel, 0,
 		\numOutputBusChannels, 4,
 		\numInputBusChannels, 2,
 		\channelsPerOrbit, 2,
 		\channelMap, 0 ! 12
 	]),
-	\viu8channel, Dictionary.newFrom([
-		\outDevice, "Eight Channel Bus",
-		\inDevice, "Aggregate Device",
-		\inChannel, 0,
-		\numOutputBusChannels, 8,
-		\numInputBusChannels, 2,
-		\channelsPerOrbit, 2,
-		\channelMap, 0 ! 12
-	])
 ]);
 
-~interface = ~interfaces.at(\focusrite);
+~interface = ~interfaces.at(\soundcraft);
 ~loadSuperdirt = true;
 ~loadStageMaster = true;
 
