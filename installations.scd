@@ -6,6 +6,13 @@ Quarks.install("https://github.com/thgrund/tidal-looper.git");
 
 Quarks.install("https://github.com/ambisonictoolkit/atk-sc3.git");
 
+Quarks.install("https://github.com/madskjeldgaard/plugins.quark")
+
+
+Quarks.install("https://github.com/triss/ChordSymbol.git")
+
+Plugins.installPlugin("portedplugins")
+
 Atk.downloadKernels;
 Atk.downloadMatrices;
 Atk.downloadSounds;

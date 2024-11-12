@@ -43,7 +43,7 @@ or via the menu File > Open startup file
 	]),
 ]);
 
-~interface = ~interfaces.at(\soundcraft);
+~interface = ~interfaces.at(\focusrite);
 ~loadSuperdirt = true;
 ~loadStageMaster = true;
 

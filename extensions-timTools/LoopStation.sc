@@ -1,8 +1,8 @@
 LoopStation {
-	var server, proxySpace, environment, fftSize, hop, win, recFadeTime, grainBufLength, channelNames;
+	var server, proxySpace, environment, fftSize, hop, win, recFadeTime, grainBufLength, defaultFadeTime, channelNames;
 
-	*new { |server, proxySpace, environment, fftSize=8192, hop=0.5, win=1, recFadeTime=0.5, grainBufLength=30|
-		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win, recFadeTime, grainBufLength, List.new());
+	*new { |server, proxySpace, environment, fftSize=8192, hop=0.5, win=1, recFadeTime=0.5, grainBufLength=30, defaultFadeTime=0.5|
+		^super.newCopyArgs(server, proxySpace, environment, fftSize, hop, win, recFadeTime, grainBufLength, defaultFadeTime, List.new());
 	}
 
 	key { |ns, param|
@@ -39,17 +39,31 @@ LoopStation {
 		var grain_rate = this.key(name, \grain_rate);
 		var grain_buffer = this.key(name, \grain_buffer);
 		var grain_recorder = this.key(name, \grain_buffer);
+    var spec_wipe = this.key(name, \spec_wipe);
+    var spec_wipe_2 = this.key(name, \spec_wipe_2);
 
 		channelNames.add(name);
 
 		proxySpace[rate] = { 1.0 };
+    proxySpace[rate].fadeTime = defaultFadeTime;
 		proxySpace[pitch] = { 1.0 };
+    proxySpace[pitch].fadeTime = defaultFadeTime;
 		proxySpace[spec_mix] = { -1.0 };
+    proxySpace[spec_mix].fadeTime = defaultFadeTime;
 		proxySpace[grain_mix] = { -1.0 };
+    proxySpace[grain_mix].fadeTime = defaultFadeTime;
 		proxySpace[grain_density] = { 0 };
+    proxySpace[grain_density].fadeTime = defaultFadeTime;
 		proxySpace[grain_duration] = { 0.1 };
+    proxySpace[grain_duration].fadeTime = defaultFadeTime;
 		proxySpace[grain_pos_randomness] = { -1 };
+    proxySpace[grain_pos_randomness].fadeTime = defaultFadeTime;
 		proxySpace[grain_rate] = { 1.0 };
+    proxySpace[grain_rate].fadeTime = defaultFadeTime;
+    proxySpace[spec_wipe] = { 0.0 };
+    proxySpace[spec_wipe].fadeTime = defaultFadeTime;
+    proxySpace[spec_wipe_2] = { 0.0 };
+    proxySpace[spec_wipe_2].fadeTime = defaultFadeTime;
 
 
 		environment[buffer] = Buffer.read(server, filename);
@@ -91,6 +105,8 @@ LoopStation {
 				var sig, chain, localbuf, shiftSig;
 				localbuf = LocalBuf.new(fftSize);
 				chain = PV_PlayBuf(localbuf, environment[fftBuf], proxySpace[rate], loop: 1);
+        chain = PV_BrickWall(chain, wipe: proxySpace[spec_wipe]);
+        chain = PV_BrickWall(chain, wipe: proxySpace[spec_wipe_2]);
 				IFFT.ar(chain, win);
 			};
 
@@ -152,6 +168,8 @@ LoopStation {
 		var grain_rate = this.key(name, \grain_rate);
 		var grain_buffer = this.key(name, \grain_buffer);
 		var grain_recorder = this.key(name, \grain_buffer);
+    var spec_wipe = this.key(name, \spec_wipe);
+    var spec_wipe_2 = this.key(name, \spec_wipe_2);
 
 
 		channelNames.add(name);
@@ -159,15 +177,27 @@ LoopStation {
 		proxySpace[recMix]  = { 0.5 };
 		proxySpace[recording].ar(1);
 		proxySpace[recording] = 0; // Set this again after starting for a soft fade. Caution - you need it to be audio rate
-		proxySpace[recording].fadeTime_(recFadeTime);
+		proxySpace[recording].fadeTime = recFadeTime;
 		proxySpace[rate] = { 1.0 };
+		proxySpace[rate].fadeTime = defaultFadeTime;
 		proxySpace[pitch] = { 1.0 };
+		proxySpace[pitch].fadeTime = defaultFadeTime;
 		proxySpace[spec_mix] = { -1.0 };
+		proxySpace[spec_mix].fadeTime = defaultFadeTime;
 		proxySpace[grain_mix] = { -1.0 };
+		proxySpace[grain_mix].fadeTime = defaultFadeTime;
 		proxySpace[grain_density] = { 0 };
+		proxySpace[grain_density].fadeTime = defaultFadeTime;
 		proxySpace[grain_duration] = { 0.1 };
+		proxySpace[grain_duration].fadeTime = defaultFadeTime;
 		proxySpace[grain_pos_randomness] = { -1 };
+		proxySpace[grain_pos_randomness].fadeTime = defaultFadeTime;
 		proxySpace[grain_rate] = { 1.0 };
+		proxySpace[grain_rate].fadeTime = defaultFadeTime;
+		proxySpace[spec_wipe] = { 0.0 };
+		proxySpace[spec_wipe].fadeTime = defaultFadeTime;
+		proxySpace[spec_wipe_2] = { 0.0 };
+		proxySpace[spec_wipe_2].fadeTime = defaultFadeTime;
 
 		environment[buffer] = Buffer.alloc(server, duration * server.sampleRate, 1);
 		environment[fftBuf] = Buffer.alloc(
@@ -220,6 +250,8 @@ LoopStation {
 				var sig, chain, localbuf, shiftSig;
 				localbuf = LocalBuf.new(fftSize);
 				chain = PV_PlayBuf(localbuf, environment[fftBuf], proxySpace[rate], loop: 1);
+        chain = PV_BrickWall(chain, wipe: proxySpace[spec_wipe]);
+        chain = PV_BrickWall(chain, wipe: proxySpace[spec_wipe_2]);
 				IFFT.ar(chain, win);
 			};
 

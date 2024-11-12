@@ -1,18 +1,20 @@
 FOAMixer {
-	var server, proxySpace, environment, channelNames, maxLevel, defaultLevel, defaultFb;
+	var server, proxySpace, environment, channelNames, maxLevel, defaultLevel, defaultFb, defaultFadeTime;
 	/*
 	  Decoder is passed in for flexibility depending on performance environment,
 	  it also needs to be initialized before passing as it does some kinda asynchronous
 	  load of data behind the scenes and fails in weird ways if you don't allow that to
 	  finish before using it
 	*/
-	*new { | server, proxySpace, environment, maxLevel=3.0, defaultLevel=0.7, defaultFb=0.7|
-		^super.newCopyArgs(server, proxySpace, environment, List.new(), maxLevel, defaultLevel, defaultFb).init();
+	*new { | server, proxySpace, environment, maxLevel=3.0, defaultLevel=0.7, defaultFb=0.7, defaultFadeTime=0.5|
+		^super.newCopyArgs(server, proxySpace, environment, List.new(), maxLevel, defaultLevel, defaultFb, defaultFadeTime).init();
     }
 
 	init {
 		proxySpace[\foa_mixer_master_fader] = { 1.0 };
+		proxySpace[\foa_mixer_master_fader].fadeTime = defaultFadeTime;
 		proxySpace[\foa_mixer_master_feedback] = { 1.0 };
+		proxySpace[\foa_mixer_master_feedback].fadeTime = defaultFadeTime;
 
 		environment[\foa_mixer_encoder] = FoaEncoderMatrix.newOmni;
 
@@ -66,15 +68,19 @@ FOAMixer {
 		} {
 			proxySpace[levelKey] = { defaultLevel };
 		};
+    proxySpace[levelKey].fadeTime = defaultFadeTime;
 
 		if(fb != nil)  {
 			proxySpace[fbKey] = { fb };
 		} {
 			proxySpace[fbKey] = { defaultFb };
 		};
+    proxySpace[fbKey].fadeTime = defaultFadeTime;
 
 		proxySpace[angleKey] = { angle };
+    proxySpace[angleKey].fadeTime = defaultFadeTime;
 		proxySpace[azimKey] = { azim };
+    proxySpace[azimKey].fadeTime = defaultFadeTime;
 
 		proxySpace[insertKey] = { proxySpace[name] };
 
