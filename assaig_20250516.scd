@@ -39,8 +39,9 @@ d = FoaDecoderMatrix.newPanto(2);
 ~out.play;
 )
 
-// Before starting,
+// VERY IMPORTANT things before starting,
 // 0) SHOW THE FUCKING LEVEL METER!!!
+// 0.5) MAKE SURE THAT FUCKING FOCUS IS RETURNED TO THIS WINDOW!!!
 
 // 1) check levels and tempo with Maia. This is VERY IMPORTANT, as clipping sounds awful, and while we can be quite relaxed about the precise loop points, they can change the end result massively.
 
@@ -61,13 +62,11 @@ f.freeze(\piano_2, 2.448) // Un compas de 4/4, negra = 98BPM, 2º compas motvo c
 f.freeze(\piano_3, 4.21) // Un compas de 4/4, negra = 57BPM, 4º acorde del final
 
 // Practice material:
-/*
-(
-f.load(\piano_1, "/home/tim/Documents/REAPER Media/rachmaninof-001.wav");
-f.load(\piano_2, "/home/tim/Documents/REAPER Media/rachmaninof-002.wav");
-f.load(\piano_3, "/home/tim/Documents/REAPER Media/rachmaninof-003.wav");
-)
-*/
+//(
+//f.load(\piano_1, "/home/tim/Documents/REAPER Media/rachmaninof-001.wav");
+//f.load(\piano_2, "/home/tim/Documents/REAPER Media/rachmaninof-002.wav");
+//f.load(\piano_3, "/home/tim/Documents/REAPER Media/rachmaninof-003.wav");
+//)
 
 
 // Tim performance
@@ -114,6 +113,63 @@ m.add(
 // HARMONIC 6, RATE 0.0093, fadeTime: 25.0
 // Tim TODO do something with the A# too, there was a reason you wanted to use it.
 
+(
+q.c_2_rate = 0.088;
+q.c_2_harmonic = 8;
+q.c_2_fade_time = 20.0;
+q.c_2_freq =  Note("C#2").freq;
+m.add(
+  f.thaw(\c_2, \piano_3,
+    fundamental: q.c_2_freq,
+    rate: q.c_2_rate,
+    highHarmonic: q.c_2_harmonic,
+    lowHarmonic: q.c_2_harmonic
+  ),
+  level: 0.0);
+)
+
+(
+~c_2_level.fadeTime=q.c_2_fade_time;
+~c_2_level = ~c_level;
+)
+
+// Move it around a bit
+//randomise dist 0-5 and freq a bit
+
+(
+~c_2_azim =  { LFBrownNoise1.ar(40.0, dev: 0.1, dist:2).range(-pi, pi) };
+~c_2_angle = -0.5 * pi;
+)
+
+~c_2_level = { ~c_level - 0.3 }
+
+(
+q.c_3_rate = 0.093;
+q.c_3_harmonic = 6;
+q.c_3_fade_time = 25.0;
+q.c_3_freq =  Note("C#2").freq;
+m.add(
+  f.thaw(\c_3, \piano_3,
+    fundamental: q.c_3_freq,
+    rate: q.c_3_rate,
+    highHarmonic: q.c_3_harmonic,
+    lowHarmonic: q.c_3_harmonic
+  ),
+  level: 0.0);
+)
+
+(
+~c_3_level.fadeTime=q.c_3_fade_time;
+~c_3_level = ~c_level;
+)
+
+// Move it around a bit
+//randomise dist 0-5 and freq a bit
+
+(
+~c_3_azim =  { LFBrownNoise1.ar(40.0, dev: 0.1, dist:2).range(-pi, pi) };
+~c_3_angle = -0.5 * pi;
+)
 
 // TIME 2.00
 
@@ -121,13 +177,32 @@ m.add(
 // vary the ratios
 
 (
-~beat_c_1 = { PitchShift.ar(~c_1, pitchRatio: 1.001) };
+~beat_c_1 = { PitchShift.ar(~c_1, pitchRatio: 1.005) };
 m.add(~beat_c_1, level: 0.0);
 ~beat_c_1_level.fadeTime = 10.0;
 ~beat_c_1_level = ~c_1_level;
 ~beat_c_1_angle = ~c_1_angle;
 ~beat_c_1_azim = ~c_1_azim;
 )
+
+(
+~beat_c_2 = { PitchShift.ar(~c_2, pitchRatio: 1.0023) };
+m.add(~beat_c_2, level: 0.0);
+~beat_c_2_level.fadeTime = 10.0;
+~beat_c_2_level = ~c_2_level;
+~beat_c_2_angle = ~c_2_angle;
+~beat_c_2_azim = ~c_2_azim;
+)
+
+(
+~beat_c_3 = { PitchShift.ar(~c_3, pitchRatio: 1.0044) };
+m.add(~beat_c_3, level: 0.0);
+~beat_c_3_level.fadeTime = 10.0;
+~beat_c_3_level = ~c_3_level;
+~beat_c_3_angle = ~c_3_angle;
+~beat_c_3_azim = ~c_3_azim;
+)
+
 
 
 // TIME 3.30
@@ -143,7 +218,7 @@ m.add(
 )
 
 (
-~c_0_level.fadeTime = 20.0;
+~c_0_level.fadeTime = 40.0;
 ~c_0_level = 1.0;
 )
 
@@ -159,9 +234,34 @@ m.add(
 
 (
 ~c_0_open_insert = { ~c_0_open * SinOsc.ar(0.08).range(0.0, 0.25) };
-~c_0_open_level.fadeTime = 20.0;
-~c_0_open_level = 1.0;
+~c_0_open_level.fadeTime = 60.0;
+~c_0_open_level = 1.2;
 )
+
+(
+~c_3.set(\fundamental, Note("C#2").freq);
+)
+
+(
+~c_3.set(\lowHarmonic, 9);
+~c_3.set(\highHarmonic,9);
+)
+
+
+(
+~c_2.set(\fundamental, Note("C#2").freq);
+)
+
+(
+~c_1.set(\lowHarmonic, 4);
+~c_1.set(\highHarmonic, 4);
+)
+
+(
+~c_2.set(\lowHarmonic, 6);
+~c_2.set(\highHarmonic, 6);
+)
+
 
 // NOW LEAVE THIS FOR  A BIT. - VERY IMPORTANT!!!!!! LEAVE IT FOR LONGER THAN YOU FEEL COMFORTABLE, THEN WAIT SOME MORE.
 
@@ -179,8 +279,8 @@ f.thaw(\a_3, \piano_1,  fundamental: Note("B3").freq, rate: 0.0544, highHarmonic
 (
 ~a_band_width_mod_max = 1;
 ~a_band_width_density = 0.5;
-~a_band_width_release = 0.001;
-~a_low_harmonic = 3;
+~a_band_width_release = 0.00001;
+~a_low_harmonic = 4;
 ~a_transition_speed = 100.0;
 ~a_x_fade_focus = 0.2;
 )
@@ -209,9 +309,12 @@ m.add(~a, level: 0.0);
 
 ~a_azim =  { LFBrownNoise1.ar(4.0, dev: 0.1, dist:2).range(-pi, pi) };
 ~a_angle = -0.5 * pi;
-~a_level.fadeTime = 20.0;
-~a_level = 1.0;
+~a_level.fadeTime = 40.0;
+~a_level = 0.6;
 )
+
+
+~a_level = 0.8
 
 // Leave this for a bit, then add the discordant bit:
 
@@ -224,14 +327,14 @@ f.thaw(\b_4, \piano_2, fundamental: Note("E3").freq, rate: 0.01, lowHarmonic: 1,
 )
 
 (
-~b_transition_speed = { 40 * 4.0 }; // vary between low (eg 4) for smooth sweeps, and eg 4000 for chaos.
+~b_transition_speed = { 4 * 4.0 }; // vary between low (eg 4) for smooth sweeps, and eg 4000 for chaos.
 ~b_band_width_mod_max = 1;
 ~b_band_width_density = 3.0;
 ~b_band_width_release = 0.002;
 ~b_delay_detune_speed = { SinOsc.ar(0.1).range(0.2,  0.32) };
 ~b_delay_detune = { 1 / 1000.0 };
-~b_low_harmonic = 3;
-~b_focus_width = 1;
+~b_low_harmonic = 7;
+~b_focus_width = 0.4;
 )
 
 (
@@ -264,9 +367,11 @@ m.add(~b, level: 0.0);
 ~b_insert = { CombL.ar(~b.ar, maxdelaytime: 5.0, delaytime: 0.66 + (~b_delay_detune * SinOsc.ar(~b_delay_detune_speed)), decaytime: 10.0) };
 ~b_azim =  { LFBrownNoise1.ar(4.0, dev: 0.1, dist:2).range(-pi, pi) };
 ~b_angle = 0.5 * pi;
-~b_level.fadeTime = 25.0;
-~b_level = 1.0;
+~b_level.fadeTime = 45.0;
+~b_level = 0.6;
 )
+
+~b_level = 0.8
 
 // Later, start fading out the original notes:
 
@@ -296,7 +401,17 @@ m.add(~b, level: 0.0);
 
 //then nothing
 
-~a_level = 0
+~a_level = 0.0
 
 
 // remember you have m.printLevels() if things are still sounding, or just pull ~foa_mixer_master_fader down.
+
+~test_1 = { SinOsc.ar(150) }
+
+~test = { ~test_1 * 0.5 }
+
+~test.play()
+
+~test_beating = { PitchShift.ar(~test_1, pitchRatio: 1+(SinOsc.kr(0.33).range(0, 10)/150.0), pitchDispersion: 0.00001) * 0.5 }
+
+~test_beating.play()
