@@ -1,9 +1,9 @@
 Freezer2 {
-	var server, proxySpace, buffers, fftSize, hop, win;
+	var server, proxySpace, buffers, synths, fftSize, hop, win;
 
 	*new { |server, proxySpace, fftSize=32768, hop=0.25, win=1|
     this.loadSynthDefs();
-		^super.newCopyArgs(server, proxySpace, (), fftSize, hop, win);
+		^super.newCopyArgs(server, proxySpace, (), (), fftSize, hop, win);
 	}
 
   *loadSynthDefs {
@@ -76,33 +76,64 @@ Freezer2 {
     var recBufKey = this.key(name, \rec_buf);
     var fftBufKey = this.key(name, \fft_buf);
 
-		buffers[recBufKey] = Buffer.alloc(server, duration * server.sampleRate, 1);
+    if(synths[name].isNil.not, {
+      synths[name].do({ arg synth;
+        synth.free();
+      });
+    });
+    synths[name] = List[];
+
+    if(buffers[fftBufKey].isNil.not, {
+      buffers[fftBufKey].free();
+    });
+    if(buffers[recBufKey].isNil.not, {
+      buffers[recBufKey].free();
+    });
+
+    buffers[recBufKey] = Buffer.alloc(server, duration * server.sampleRate, 1);
 		buffers[fftBufKey] = Buffer.alloc(
 			server,
 			duration.calcPVRecSize(fftSize, hop, server.sampleRate),
 			1
 		);
 
-    Synth(\freezerRecorder, ["bufnum", buffers[recBufKey], "duration", duration]);
-    Synth(\freezerAnalyzer, ["inBufnum", buffers[recBufKey], "outBufnum", buffers[fftBufKey], "fftSize", fftSize, "hop", hop, "win", win]);
+    synths[name].add(Synth(\freezerRecorder, ["bufnum", buffers[recBufKey], "duration", duration]));
+    synths[name].add(Synth(\freezerAnalyzer, ["inBufnum", buffers[recBufKey], "outBufnum", buffers[fftBufKey], "fftSize", fftSize, "hop", hop, "win", win]));
   }
 
   load { |name, filename|
     var recBufKey = this.key(name, \rec_buf);
     var fftBufKey = this.key(name, \fft_buf);
+
+    if(synths[name].isNil.not, {
+      synths[name].do({ arg synth;
+        synth.free();
+      });
+    });
+    synths[name] = List[];
+
+
+    if(buffers[fftBufKey].isNil.not, {
+      buffers[fftBufKey].free();
+    });
+    if(buffers[recBufKey].isNil.not, {
+      buffers[recBufKey].free();
+    });
+
 		buffers[recBufKey] = Buffer.read(server, filename, action: { arg b;
       buffers[fftBufKey] = Buffer.alloc(
         server,
         b.duration.calcPVRecSize(fftSize, hop, server.sampleRate),
         1
       );
-      Synth(\freezerAnalyzer, ["inBufnum", b, "outBufnum", buffers[fftBufKey], "fftSize", fftSize, "hop", hop, "win", win]);
+      synths[name].add(Synth(\freezerAnalyzer, ["inBufnum", b, "outBufnum", buffers[fftBufKey], "fftSize", fftSize, "hop", hop, "win", win]));
     });
   }
 
   thaw { |playerName, recorderName, fundamental, lowHarmonic=1, highHarmonic=10, rate=0.1,width=1.0, phase=0.0, shift=0.0|
     var fftBufKey = this.key(recorderName, \fft_buf);
     proxySpace[playerName]= \freezerPlayer;
+    synths[recorderName].add(proxySpace[playerName]);
     proxySpace[playerName].set(
       \bufnum, buffers[fftBufKey],
       \fundamental, fundamental,
