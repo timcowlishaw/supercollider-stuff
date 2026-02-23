@@ -14,38 +14,20 @@ or via the menu File > Open startup file
 
 (
 ~interfaces = Dictionary.newFrom([
-	\stereo, Dictionary.newFrom([
-		\outDevice, "Supercollider (stereo)",
-		\inDevice, "Supercollider (stereo)",
+	\supercollider, Dictionary.newFrom([
+		\outDevice, "Supercollider 2x32ch",
+		\inDevice, "Supercollider 2x32ch",
 		\inChannel, 0,
-		\numOutputBusChannels, 2,
-		\numInputBusChannels, 2,
-		\channelsPerOrbit, 2,
-		\channelMap, 0 ! 12,
-	]),
-	\soundcraft, Dictionary.newFrom([
-		\outDevice, "Supercollider (soundcraft)",
-		\inDevice, "Supercollider (soundcraft)",
-		\inChannel, 4,
-		\numOutputBusChannels, 12,
-		\numInputBusChannels, 14,
-		\channelsPerOrbit, 1,
-		\channelMap, [0, 1, 2, 3, 4, 5, [6,7], [8,9], [10, 11]]
-	]),
-	\focusrite, Dictionary.newFrom([
-		\outDevice, "Supercollider (focusrite)",
-		\inDevice, "Supercollider (focusrite)",
-		\inChannel, 0,
-		\numOutputBusChannels, 4,
+		\numOutputBusChannels, 32,
 		\numInputBusChannels, 2,
 		\channelsPerOrbit, 2,
 		\channelMap, 0 ! 12
 	]),
 ]);
 
-~interface = ~interfaces.at(\focusrite);
+~interface = ~interfaces.at(\supercollider);
 ~loadSuperdirt = true;
-~loadStageMaster = true;
+~loadStageMaster = true; // Turn off for ambisonics out
 
 s.reboot { // server options are only updated on reboot
 	// configure the sound server: here you could add hardware specific options
@@ -60,9 +42,9 @@ s.reboot { // server options are only updated on reboot
 
 	s.options.numOutputBusChannels = ~interface.at(\numOutputBusChannels); // set this to your hardware output channel size, if necessary
 	s.options.numInputBusChannels = ~interface.at(\numInputBusChannels);
-	s.options.numBuffers = 4096 * 256; // increase this if you need to load more samples
-	s.options.memSize = 16384 * 32 * 2; // increase this if you get "alloc failed" messages
-	s.options.numWireBufs = 64 * 4; // increase this if you get "exceeded number of interconnect buffers" messages
+	s.options.numBuffers = 4096 * 512; // increase this if you need to load more samples
+	s.options.memSize = 16384 * 32 * 4; // increase this if you get "alloc failed" messages
+	s.options.numWireBufs = 256 * 4; // increase this if you get "exceeded number of interconnect buffers" messages
 	s.options.maxNodes = 1024 * 32 * 4; // increase this if you are getting drop outs and the message "too many nodes"
 	s.options.numAudioBusChannels = 1024 * 4;
 

@@ -36,7 +36,9 @@ m.add(l.listen(\zero, 18.0))
 ~zero_recording = 0
 
 ~zero_rate = -0.33
-~zero_spec_mix = 0.0
+~zero_spec_mix = 1.0
+
+~zero_level = 2.0
 
 //PING! and behind bridge
 m.add(l.listen(\one, 10.0))
@@ -45,13 +47,14 @@ m.add(l.listen(\one, 10.0))
 
 ~one_spec_mix.fadeTime = 25;
 
-~one_rate = 0.1;
+~one_rate = -0.25;
 
 // AFTER A FEW LOOPS.
 
+~one_level = 3.0;
 
 
-~one_spec_mix = -0.2;
+~one_spec_mix = -1;
 
 
 
@@ -64,22 +67,29 @@ m.add(l.listen(\two, 13.0), level: 0.0)
 ~rhythm_1 = { SinOsc.ar(0.3).range(0.0, 0.7) * Saw.ar(LFNoise1.ar(500).range(2.0, 10.0)) * ~two_spec_playback }
 m.add(~rhythm_1, level: 0.0)
 ~rhythm_1_level.fadeTime = 30.0
-~rhythm_1_level = 0.4
+~rhythm_1_level = 2.0
 
 
 ~two_level.fadeTime = 10.0
-~two_level = 0.3
+~two_level = 2.0
 
 
 // Free, noisy
-m.add(l.listen(\three, 18.0), level: 0.0)
+m.add(l.listen(\three, 18.0), level: 3.0)
 
 ~three_recording = 0
 
 ~three_grain_density = { SinOsc.ar(10.0).range(0.0, 50.0) }
 ~three_grain_mix = 1.0
-~three_grain_duration = { LFNoise2.ar(500).range(0.05, 0.17) }
+~three_grain_duration = { LFNoise2.ar(500).range(0.05, 0.07) }
 
+~three_grain_pos_randomness = { SinOsc.ar(15.0).range(0.5, 1.3) }
+
+~three_level = 0.7
+
+~three_spec_mix = -0.5
+
+~three_rate = { LFNoise2.ar(500).range(0.05, 0.5) }
 
 // TRANSITION TO SECOND MVMT.
 

@@ -49,7 +49,7 @@ d = FoaDecoderMatrix.newPanto(2);
 
 
 // 2) Adjust this to fit the acoustics and relative level of the piano.
-~foa_mixer_master_fader = 5.0;
+~foa_mixer_master_fader = 2.0;
 ~foa_mixer_master_fader.fadeTime = 3.0;
 
 
@@ -223,7 +223,7 @@ m.add(
 (
 ~c_0_open_insert = { ~c_0_open * SinOsc.ar(0.08).range(0.0, 0.25) };
 ~c_0_open_level.fadeTime = 60.0;
-~c_0_open_level = 1.2;
+~c_0_open_level = 2.0;
 )
 
 ~c_level.fadeTime = 15
