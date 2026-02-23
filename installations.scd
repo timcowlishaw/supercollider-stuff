@@ -1,4 +1,4 @@
-uarks.install("SuperDirt");
+Quarks.install("SuperDirt");
 
 Quarks.install("https://github.com/calumgunn/StageMaster.git");
 
@@ -12,6 +12,8 @@ Quarks.install("https://github.com/madskjeldgaard/plugins.quark")
 Quarks.install("https://github.com/triss/ChordSymbol.git")
 
 Quarks.install("https://github.com/dkmayer/miSCellaneous_lib.git")
+
+Quarks.install("https://github.com/JamesWenlock/AmbiVerbSC.git")
 
 Plugins.installPlugin("portedplugins")
 
