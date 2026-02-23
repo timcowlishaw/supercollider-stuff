@@ -41,6 +41,13 @@ LoopStation {
 		var grain_recorder = this.key(name, \grain_buffer);
     var spec_wipe_lower = this.key(name, \spec_wipe_lower);
     var spec_wipe_upper = this.key(name, \spec_wipe_upper);
+    var grain_slope = this.key(name, \grain_slope);
+    var grain_angle = this.key(name, \grain_angle);
+    var grain_curve = this.key(name, \grain_curve);
+    var grain_envelope_buffer = this.key(name, \grain_envelope_buffer);
+    var grainUpdateCallback;
+    var startPos = this.key(name, \start_pos);
+    var endPos = this.key(name, \end_pos);
 
 		channelNames.add(name);
 
@@ -64,13 +71,46 @@ LoopStation {
     proxySpace[spec_wipe_upper] = { server.sampleRate / 2 };
     proxySpace[spec_wipe_upper].fadeTime = defaultFadeTime;
 
+    proxySpace[grain_slope] = 0.5;
+    proxySpace[grain_angle] = 0;
+    proxySpace[grain_curve] = 0.0;
 
-		environment[buffer] = Buffer.read(server, filename);
+    proxySpace[startPos] = { 0.0 };
+    proxySpace[endPos] = { 1.0 };
+
+    environment[buffer] = Buffer.read(server, filename);
 		environment[grain_buffer] = Buffer.alloc(server, grainBufLength * server.sampleRate, 1);
+
+    environment[grain_envelope_buffer] = Buffer.alloc(server, server.sampleRate, 1);
+
+    grainUpdateCallback =  {
+      fork {
+        var slope, angle, curve, env, normAngle, stage1, stage2, stage3;
+        1.wait;
+        slope = proxySpace[grain_slope].bus.getSynchronous;
+        angle = proxySpace[grain_angle].bus.getSynchronous;
+        curve = proxySpace[grain_curve].bus.getSynchronous;
+        normAngle = (1 + angle) / 2;
+        stage1 = slope * normAngle;
+        stage2 = 1 - slope;
+        stage3 = slope * (1 - normAngle);
+        env = Env(levels: [0, 1, 1, 0], times: [stage1, stage2, stage3], curve: [curve, 0, 0-curve]);
+        environment[grain_envelope_buffer].loadCollection(env.discretize);
+      }
+    };
+
+    grainUpdateCallback.();
+    proxySpace[grain_slope].addDependant(grainUpdateCallback);
+    proxySpace[grain_angle].addDependant(grainUpdateCallback);
+    proxySpace[grain_curve].addDependant(grainUpdateCallback);
 
 		proxySpace[clean_playback] = {
 			var playHead;
-			playHead = Phasor.ar(0, BufRateScale.kr(environment[buffer]), 0, BufFrames.kr(environment[buffer]));
+			playHead = Phasor.ar(0,
+        rate: BufRateScale.kr(environment[buffer]),
+        start: proxySpace[startPos] * BufFrames.kr(environment[buffer]),
+        end: proxySpace[endPos] * BufFrames.kr(environment[buffer])
+      );
 			BufRd.ar(1, environment[buffer], playHead);
 		};
 
@@ -90,7 +130,11 @@ LoopStation {
 
 			proxySpace[analyser] = {
 				var localbuf, chain, sig, playHead;
-				playHead = Phasor.ar(0, BufRateScale.kr(environment[buffer]), 0, BufFrames.kr(environment[buffer]));
+        playHead = Phasor.ar(0,
+          rate: BufRateScale.kr(environment[buffer]),
+          start: proxySpace[startPos] * BufFrames.kr(environment[buffer]),
+          end: proxySpace[endPos] * BufFrames.kr(environment[buffer])
+        );
 				sig = BufRd.ar(1, environment[buffer], playHead);
 
 				localbuf = LocalBuf.new(fftSize);
@@ -131,12 +175,18 @@ LoopStation {
 				var impulses, bufnum;
 				impulses = proxySpace[grain_trigs];
 				bufnum = environment[grain_buffer].bufnum;
-				GrainBuf.ar(1,impulses, proxySpace[grain_duration], environment[grain_buffer], proxySpace[grain_rate],
-					XFade2.ar(
+				GrainBuf.ar(
+          numChannels: 1,
+          trigger: impulses,
+          dur: proxySpace[grain_duration],
+          sndbuf: environment[grain_buffer],
+          rate: proxySpace[grain_rate],
+					pos: XFade2.ar(
 						Phasor.ar(0, BufRateScale.kr(bufnum) / BufFrames.kr(bufnum), 0, 1),
 						LinLin.ar(WhiteNoise.ar, -1, 1, 0, 1),
 						proxySpace[grain_pos_randomness]
-					)
+					),
+          envbufnum: environment[grain_envelope_buffer].bufnum
 				);
 			};
 
@@ -171,6 +221,14 @@ LoopStation {
 		var grain_recorder = this.key(name, \grain_buffer);
     var spec_wipe_lower = this.key(name, \spec_wipe_lower);
     var spec_wipe_upper = this.key(name, \spec_wipe_upper);
+    var grain_slope = this.key(name, \grain_slope);
+    var grain_angle = this.key(name, \grain_angle);
+    var grain_curve = this.key(name, \grain_curve);
+    var grain_envelope_buffer = this.key(name, \grain_envelope_buffer);
+    var grainUpdateCallback;
+    var startPos = this.key(name, \start_pos);
+    var endPos = this.key(name, \end_pos);
+
 
 
 		channelNames.add(name);
@@ -199,19 +257,54 @@ LoopStation {
     proxySpace[spec_wipe_upper] = { server.sampleRate / 2 };
     proxySpace[spec_wipe_upper].fadeTime = defaultFadeTime;
 
+    proxySpace[grain_slope] = 0.5;
+    proxySpace[grain_angle] = 0;
+    proxySpace[grain_curve] = 0.0;
+
+    proxySpace[startPos] = { 0.0 };
+    proxySpace[endPos] = { 1.0 };
+
+    environment[grain_envelope_buffer] = Buffer.alloc(server, server.sampleRate, 1);
+
+    grainUpdateCallback =  {
+      fork {
+        var slope, angle, curve, env, normAngle, stage1, stage2, stage3;
+        1.wait;
+        slope = proxySpace[grain_slope].bus.getSynchronous;
+        angle = proxySpace[grain_angle].bus.getSynchronous;
+        curve = proxySpace[grain_curve].bus.getSynchronous;
+        normAngle = (1 + angle) / 2;
+        stage1 = slope * normAngle;
+        stage2 = 1 - slope;
+        stage3 = slope * (1 - normAngle);
+        env = Env(levels: [0, 1, 1, 0], times: [stage1, stage2, stage3], curve: [curve, 0, 0-curve]);
+        environment[grain_envelope_buffer].loadCollection(env.discretize);
+      }
+    };
+
+    grainUpdateCallback.();
+    proxySpace[grain_slope].addDependant(grainUpdateCallback);
+    proxySpace[grain_angle].addDependant(grainUpdateCallback);
+    proxySpace[grain_curve].addDependant(grainUpdateCallback);
+
 		environment[buffer] = Buffer.alloc(server, duration * server.sampleRate, 1);
 		environment[fftBuf] = Buffer.alloc(
 			server,
 			duration.calcPVRecSize(fftSize, hop, server.sampleRate),
 			1
 		);
-		environment[grain_buffer] = Buffer.alloc(server, grainBufLength * server.sampleRate, 1);
+
+    environment[grain_buffer] = Buffer.alloc(server, grainBufLength * server.sampleRate, 1);
 
 
 		proxySpace[recorder] = {
 			var inputSig, existingSig, recHead;
 			var bufnum = environment[buffer].bufnum;
-			recHead = Phasor.ar(0, BufRateScale.kr(bufnum), 0, BufFrames.kr(bufnum));
+			recHead = Phasor.ar(0,
+        rate: BufRateScale.kr(bufnum),
+        start: proxySpace[startPos] * BufFrames.kr(bufnum),
+        end: proxySpace[endPos] * BufFrames.kr(bufnum)
+      );
 			existingSig = BufRd.ar(1, bufnum, recHead);
 			inputSig = SoundIn.ar(0);
 			BufWr.ar(
@@ -227,7 +320,11 @@ LoopStation {
 
 		proxySpace[analyser] = {
 			var localbuf, chain, sig, playHead;
-			playHead = Phasor.ar(0, BufRateScale.kr(environment[buffer]), 0, BufFrames.kr(environment[buffer]));
+			playHead = Phasor.ar(0,
+        rate: BufRateScale.kr(environment[buffer]),
+        start: proxySpace[startPos] * BufFrames.kr(environment[buffer]),
+        end: proxySpace[endPos] * BufFrames.kr(environment[buffer])
+      );
 			sig = BufRd.ar(1, environment[buffer], playHead);
 			localbuf = LocalBuf.new(fftSize);
 			chain = FFT(localbuf, sig, hop, win);
@@ -276,12 +373,18 @@ LoopStation {
 				var impulses, bufnum;
 				impulses = proxySpace[grain_trigs];
 				bufnum = environment[grain_buffer].bufnum;
-				GrainBuf.ar(1,impulses, proxySpace[grain_duration], environment[grain_buffer], proxySpace[grain_rate],
-					XFade2.ar(
+				GrainBuf.ar(
+          numChannels: 1,
+          trigger: impulses,
+          dur: proxySpace[grain_duration],
+          sndbuf: environment[grain_buffer],
+          rate: proxySpace[grain_rate],
+					pos: XFade2.ar(
 						Phasor.ar(0, BufRateScale.kr(bufnum) / BufFrames.kr(bufnum), 0, 1),
 						LinLin.ar(WhiteNoise.ar, -1, 1, 0, 1),
 						proxySpace[grain_pos_randomness]
-					)
+					),
+          envbufnum: environment[grain_envelope_buffer].bufnum
 				);
 			};
 
